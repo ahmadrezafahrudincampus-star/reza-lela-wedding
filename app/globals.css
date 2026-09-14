@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #1B060E;
+    color: #1D1D1D;
+    overflow-x: hidden;
+  }
+}
+
+/* Invitation frame scroll within portrait container on desktop */
+@layer utilities {
+  .invitation-frame {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #7E2546 transparent;
+  }
+
+  .invitation-frame::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .invitation-frame::-webkit-scrollbar-thumb {
+    background-color: #7E2546;
+    border-radius: 9999px;
+  }
+}

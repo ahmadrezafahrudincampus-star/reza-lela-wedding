@@ -396,7 +396,7 @@ on conflict do nothing;
 insert into public.bank_accounts (type, bank_name, account_number, account_holder, sort_order, is_active)
 values
   ('bank', 'MANDIRI', '03123456789', 'Ahmad Reza Fahrudin', 1, true),
-  ('bank', 'BCA', '03123456789', 'Laila Nur A’immah', 2, true)
+  ('bank', 'BCA', '03123456789', 'Laila Nur A''immah', 2, true)
 on conflict do nothing;
 
 -- Seed admin messages / doa

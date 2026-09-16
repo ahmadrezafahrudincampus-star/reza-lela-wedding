@@ -23,7 +23,7 @@ export const Quote: React.FC<QuoteProps> = ({ className }) => {
   useEffect(() => {
     async function loadMessages() {
       try {
-        const res = await fetch("/api/admin/messages");
+        const res = await fetch("/api/messages");
         const data = await res.json();
         if (res.ok && Array.isArray(data.messages) && data.messages.length > 0) {
           const active = data.messages.filter((m: AdminMessage) => m.is_active);

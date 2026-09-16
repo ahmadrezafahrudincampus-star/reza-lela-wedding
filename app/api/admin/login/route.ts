@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSessionToken, ADMIN_COOKIE_NAME } from "@/lib/auth";
 import { isSupabaseConfigured, getServiceSupabase } from "@/lib/supabase";
+import crypto from "crypto";
 
-// Development default credentials
-const DEFAULT_USERNAME = "admin";
-const DEFAULT_PASSWORD = "admin";
+const ADMIN_USERNAME = "admin";
+const FALLBACK_PASSWORD = "admin"; // Used ONLY when Supabase is not configured
+const SALT = "wedding-salt-2026";
+
+function hashPassword(password: string): string {
+  return crypto.createHash("sha256").update(`${SALT}:${password}`).digest("hex");
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,35 +26,38 @@ export async function POST(req: NextRequest) {
     const cleanUsername = String(username).trim();
     const cleanPassword = String(password).trim();
 
+    if (cleanUsername !== ADMIN_USERNAME) {
+      return NextResponse.json(
+        { success: false, error: "Username atau password salah." },
+        { status: 401 }
+      );
+    }
+
     let isAuthenticated = false;
 
-    // 1. If Supabase is configured, try Supabase Auth first
+    // 1. If Supabase is configured, verify password hash from admin_settings
     if (isSupabaseConfigured()) {
       const supabase = getServiceSupabase();
-      // Lookup email for the username in admin_profiles
-      const { data: profile } = await supabase
-        .from("admin_profiles")
-        .select("id, username")
-        .eq("username", cleanUsername)
+      const { data: setting } = await supabase
+        .from("admin_settings")
+        .select("value")
+        .eq("key", "admin_password_hash")
         .maybeSingle();
 
-      if (profile) {
-        // Authenticate with Supabase Auth
-        const email = `${cleanUsername}@wedding.local`;
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password: cleanPassword,
-        });
-
-        if (!signInError) {
+      if (setting?.value) {
+        const inputHash = hashPassword(cleanPassword);
+        if (inputHash === setting.value) {
+          isAuthenticated = true;
+        }
+      } else {
+        // No password stored yet: fall back to default 'admin'
+        if (cleanPassword === FALLBACK_PASSWORD) {
           isAuthenticated = true;
         }
       }
-    }
-
-    // 2. Default initial development check
-    if (!isAuthenticated) {
-      if (cleanUsername === DEFAULT_USERNAME && cleanPassword === DEFAULT_PASSWORD) {
+    } else {
+      // Supabase not configured: use hardcoded default for local dev only
+      if (cleanPassword === FALLBACK_PASSWORD) {
         isAuthenticated = true;
       }
     }
@@ -61,7 +69,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create secure signed session token
     const token = createSessionToken(cleanUsername);
 
     const response = NextResponse.json({
@@ -70,7 +77,6 @@ export async function POST(req: NextRequest) {
       username: cleanUsername,
     });
 
-    // Set HTTP-only secure cookie
     response.cookies.set({
       name: ADMIN_COOKIE_NAME,
       value: token,
@@ -78,7 +84,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 7 * 24 * 60 * 60,
     });
 
     return response;
@@ -89,3 +95,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

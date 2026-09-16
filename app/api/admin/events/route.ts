@@ -4,6 +4,11 @@ import { getAdminSession } from "@/lib/auth";
 import { isSupabaseConfigured, getServiceSupabase } from "@/lib/supabase";
 
 export async function GET() {
+  const session = await getAdminSession();
+  if (!session) {
+    return NextResponse.json({ error: "Tidak memiliki otorisasi." }, { status: 401 });
+  }
+
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ configured: false, events: [] });
   }

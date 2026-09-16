@@ -30,7 +30,7 @@ export const LoveGift: React.FC<LoveGiftProps> = ({ className }) => {
   useEffect(() => {
     async function loadAccounts() {
       try {
-        const res = await fetch("/api/admin/bank-accounts");
+        const res = await fetch("/api/bank-accounts");
         const data = await res.json();
         if (res.ok && Array.isArray(data.accounts) && data.accounts.length > 0) {
           const active = data.accounts.filter((a: BankAccount) => a.is_active);

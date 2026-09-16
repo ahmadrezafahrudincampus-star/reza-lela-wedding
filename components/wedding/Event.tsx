@@ -28,7 +28,7 @@ export const Event: React.FC<EventProps> = ({ className }) => {
   useEffect(() => {
     async function loadEvents() {
       try {
-        const res = await fetch("/api/admin/events");
+        const res = await fetch("/api/events");
         const data = await res.json();
         if (res.ok && Array.isArray(data.events) && data.events.length > 0) {
           const active = data.events.filter((e: EventItem) => e.is_active);

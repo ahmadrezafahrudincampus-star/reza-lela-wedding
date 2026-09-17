@@ -122,7 +122,7 @@ export const weddingData: WeddingData = {
       description: "Putra Pertama Bpk. Ibrahim & Ibu Siti Rokayah",
       fatherName: "Ibrahim",
       motherName: "Siti Rokayah",
-      instagram: "https://instagram.com",
+      instagram: "",
       photo: "/images/prewedding_0xOm1cSHpdt6-683x1024.jpeg",
     },
     bride: {
@@ -131,7 +131,7 @@ export const weddingData: WeddingData = {
       description: "Putri Bungsu Bpk. Ade Haiz & Ibu Hulayah",
       fatherName: "Ade Haiz",
       motherName: "Hulayah",
-      instagram: "https://instagram.com",
+      instagram: "",
       photo: "/images/prewedding_0xOm1cSHpdt6-683x1024.jpeg",
     },
     primaryDisplay: "Lela & Reza",

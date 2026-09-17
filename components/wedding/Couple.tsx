@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { weddingData, PersonInfo } from "@/data/wedding";
 import { Reveal } from "@/components/ui/Reveal";
 import {
@@ -10,10 +10,15 @@ import {
 } from "@/components/ui/Ornaments";
 import { AmbientFloralSway } from "@/components/ui/AmbientMotion";
 import { Instagram } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, isValidInstagramUrl } from "@/lib/utils";
 
 export interface CoupleProps {
   className?: string;
+}
+
+interface PersonSocialConfig {
+  url: string;
+  enabled: boolean;
 }
 
 interface PersonProfileProps {
@@ -21,6 +26,7 @@ interface PersonProfileProps {
   role: "bride" | "groom";
   editorialLabel: string;
   parentLabel: string;
+  social?: PersonSocialConfig;
 }
 
 const PersonProfile: React.FC<PersonProfileProps> = ({
@@ -28,11 +34,13 @@ const PersonProfile: React.FC<PersonProfileProps> = ({
   role,
   editorialLabel,
   parentLabel,
+  social,
 }) => {
-  const hasValidInstagram =
-    Boolean(person.instagram) &&
-    person.instagram !== "#" &&
-    person.instagram!.trim().length > 0;
+  const showInstagram = Boolean(
+    social?.enabled &&
+    social?.url &&
+    isValidInstagramUrl(social.url)
+  );
 
   return (
     <div className="flex flex-col items-center text-center space-y-3 max-w-xs mx-auto">
@@ -74,10 +82,10 @@ const PersonProfile: React.FC<PersonProfileProps> = ({
       </Reveal>
 
       {/* Social Link (only if configured and valid) */}
-      {hasValidInstagram && (
+      {showInstagram && (
         <Reveal animation="fade" delay={0.45} duration={0.7}>
           <a
-            href={person.instagram}
+            href={social!.url}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Instagram profil ${person.fullName}`}
@@ -100,6 +108,41 @@ const PersonProfile: React.FC<PersonProfileProps> = ({
  */
 export const Couple: React.FC<CoupleProps> = ({ className }) => {
   const { couple } = weddingData;
+  const [socialMedia, setSocialMedia] = useState<{
+    bride: PersonSocialConfig;
+    groom: PersonSocialConfig;
+  }>({
+    bride: { url: "", enabled: false },
+    groom: { url: "", enabled: false },
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadSocialMedia() {
+      try {
+        const res = await fetch("/api/social-media");
+        const data = await res.json();
+        if (isMounted && res.ok && data.bride && data.groom) {
+          setSocialMedia({
+            bride: {
+              url: data.bride.url || "",
+              enabled: Boolean(data.bride.enabled),
+            },
+            groom: {
+              url: data.groom.url || "",
+              enabled: Boolean(data.groom.enabled),
+            },
+          });
+        }
+      } catch {
+        // Fallback gracefully: button hidden
+      }
+    }
+    loadSocialMedia();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const monogram = `${couple.monogram.brideInitial} & ${couple.monogram.groomInitial}`;
 
@@ -145,6 +188,7 @@ export const Couple: React.FC<CoupleProps> = ({ className }) => {
           role="bride"
           editorialLabel="The Bride"
           parentLabel="Putri dari"
+          social={socialMedia.bride}
         />
 
         {/* Delicate Connecting Centerpiece */}
@@ -167,6 +211,7 @@ export const Couple: React.FC<CoupleProps> = ({ className }) => {
           role="groom"
           editorialLabel="The Groom"
           parentLabel="Putra dari"
+          social={socialMedia.groom}
         />
       </div>
 

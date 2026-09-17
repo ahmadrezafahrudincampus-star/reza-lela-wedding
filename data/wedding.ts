@@ -199,9 +199,9 @@ export const weddingData: WeddingData = {
     },
   },
   audio: {
-    title: "I Wanna Grow Old with You",
-    artist: "Westlife",
-    src: "https://inv.ridhoin.id/wp-content/uploads/2026/01/Westlife-I-Wanna-Grow-Old-with-You-Official-Audio-2.mp3",
+    title: "Marry Your Daughter",
+    artist: "Brian McKnight",
+    src: "/music/marry-your-daughter.m4a",
     loop: true,
     autoplay: true,
   },

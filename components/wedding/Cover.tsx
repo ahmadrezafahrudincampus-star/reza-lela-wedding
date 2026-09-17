@@ -116,7 +116,7 @@ export const Cover: React.FC<CoverProps> = ({
   const { invitation, couple, recipient } = weddingData;
   const prefersReducedMotion = useReducedMotion();
 
-  const displayedGuest = guestName || recipient.name;
+  const displayedGuest = guestName?.trim() || "";
 
   const [textVisible, setTextVisible] = useState(false);
 
@@ -275,12 +275,18 @@ export const Cover: React.FC<CoverProps> = ({
               <p className="font-sans text-[10px] text-burgundy-200/60 mt-0.5">
                 di tempat
               </p>
-              <p className="font-serif text-lg sm:text-xl font-semibold text-white mt-1.5 leading-snug break-words">
-                {displayedGuest}
-              </p>
-              <p className="font-sans text-[9px] text-white/45 mt-1.5 leading-normal">
-                {recipient.disclaimer}
-              </p>
+              {displayedGuest ? (
+                <>
+                  <p className="font-serif text-lg sm:text-xl font-semibold text-white mt-1.5 leading-snug break-words">
+                    {displayedGuest}
+                  </p>
+                  {recipient.disclaimer && (
+                    <p className="font-sans text-[9px] text-white/45 mt-1.5 leading-normal">
+                      {recipient.disclaimer}
+                    </p>
+                  )}
+                </>
+              ) : null}
             </div>
           </motion.div>
 

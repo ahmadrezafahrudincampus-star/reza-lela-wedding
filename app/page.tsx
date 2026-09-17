@@ -36,9 +36,6 @@ interface GuestEntry {
 function WeddingInvitationApp() {
   const searchParams = useSearchParams();
   const toParam = searchParams.get("to");
-  const guestParamName = toParam?.trim()
-    ? toParam.replace(/\+/g, " ").replace(/-/g, " ").trim()
-    : undefined;
 
   const [dbGuestName, setDbGuestName] = useState<string | null>(null);
   const [isOpened, setIsOpened] = useState<boolean>(false);
@@ -50,21 +47,38 @@ function WeddingInvitationApp() {
 
   // Initial guest lookup by slug from database
   useEffect(() => {
-    if (!toParam?.trim()) return;
-    const cleanSlug = toParam.trim();
+    const rawSlug = toParam?.trim();
+    if (!rawSlug || rawSlug === "undefined" || rawSlug === "null") {
+      setDbGuestName(null);
+      return;
+    }
+    const validSlug: string = rawSlug;
 
+    let isMounted = true;
     async function lookup() {
       try {
-        const res = await fetch(`/api/guest?slug=${encodeURIComponent(cleanSlug)}`);
+        const res = await fetch(`/api/guest?slug=${encodeURIComponent(validSlug)}`);
+        if (!res.ok) {
+          if (isMounted) setDbGuestName(null);
+          return;
+        }
         const data = await res.json();
-        if (data.found && data.guest?.name) {
-          setDbGuestName(data.guest.name);
+        if (isMounted) {
+          if (data.found && data.guest?.name) {
+            setDbGuestName(data.guest.name);
+          } else {
+            setDbGuestName(null);
+          }
         }
       } catch {
-        // Fallback gracefully
+        if (isMounted) setDbGuestName(null);
       }
     }
     lookup();
+
+    return () => {
+      isMounted = false;
+    };
   }, [toParam]);
 
   // Manage body scroll locking: locked before opening, unlocked after opening
@@ -84,9 +98,10 @@ function WeddingInvitationApp() {
   const handleOpenInvitation = () => {
     setIsOpening(true);
 
-    // Track open count in database if guest slug exists
-    if (toParam?.trim()) {
-      fetch(`/api/guest?slug=${encodeURIComponent(toParam.trim())}&track=true`).catch(() => {});
+    // Track open count in database if guest slug exists and is verified
+    const cleanSlug = toParam?.trim();
+    if (cleanSlug && cleanSlug !== "undefined" && cleanSlug !== "null" && dbGuestName) {
+      fetch(`/api/guest?slug=${encodeURIComponent(cleanSlug)}&track=true`).catch(() => {});
     }
 
     // Attempt audio playback immediately within the user gesture event
@@ -104,7 +119,7 @@ function WeddingInvitationApp() {
     setGuestEntries((prev) => [entry, ...prev]);
   }, []);
 
-  const activeGuest = dbGuestName || guestParamName || weddingData.recipient.name;
+  const activeGuest = dbGuestName || "";
 
   return (
     <div className="relative min-h-screen bg-burgundy-900 flex items-start justify-center md:py-10">
@@ -201,7 +216,7 @@ function WeddingInvitationApp() {
         <ScrollReveal delay={0.05}>
           <RSVP
             onSubmit={handleRSVPSubmit}
-            initialName={dbGuestName || guestParamName || ""}
+            initialName={dbGuestName || ""}
           />
         </ScrollReveal>
 

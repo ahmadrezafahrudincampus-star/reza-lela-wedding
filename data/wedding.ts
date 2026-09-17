@@ -53,7 +53,7 @@ export interface WeddingData {
     heroHeading: string;
   };
   recipient: {
-    name: string;
+    name?: string;
     address: string;
     greeting: string;
     disclaimer: string;
@@ -107,7 +107,7 @@ export const weddingData: WeddingData = {
     heroHeading: "The Wedding of",
   },
   recipient: {
-    name: "Bpk. Ade Haiz & Ibu Hulayah",
+    name: "",
     address: "Kp. Rumpak Sinang RT. 03/01 Kel. Pakulonan Barat Kec. Kelapa Dua, Tangerang",
     greeting: "Kepada Yth. Bapak/Ibu/Saudara/i",
     disclaimer: "Mohon maaf jika ada kesalahan nama/gelar",
